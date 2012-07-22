@@ -1,0 +1,16 @@
+(ns crossfire.player)
+
+(defn all-players [world]
+  (let [players (:players world)]
+    players))
+
+(defn active-players [world]
+  (filter #( #{:active} (:status %)) (all-players world)))
+
+
+(defn opponent? [player other-player]
+  (not= player other-player))
+
+(defn opponents [world player]
+  (filter (partial opponent? player) (active-players world)))
+

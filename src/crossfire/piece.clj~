@@ -1,0 +1,6 @@
+(ns crossfire.piece)
+
+(defrecord Piece [coods-map])
+
+(defn make-piece-at [prototype cood]
+  { :coods (map cood+ (repeat cood) (:delta-coods prototype)) })

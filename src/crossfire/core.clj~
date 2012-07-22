@@ -1,0 +1,95 @@
+(ns crossfire.core
+  (use [crossfire.board :only [print-board empty-coods available-coods]]
+       [crossfire.protocol.peg]
+       [crossfire.miss]
+       [crossfire.piece :only [make-piece-at]]
+       [crossfire.player :only [opponents active-players]]))
+
+
+(defn make-random-shot [world player opponent]
+  (let [
+        boardid (:boardid opponent)
+        cood (rand-nth (available-coods world boardid))
+        next (peg (get-in world [boardid :coods cood]) world boardid cood)]
+    (println (:name player) " attacks " (:name opponent) " at " cood)
+    next))
+
+
+
+(defn vec+
+  ([] nil)
+  ([v1] v1)
+  ([v1 v2]
+     (let [c1 (count v1)
+           c2 (count v2)
+           seq (if (< c1 c2)
+                 (map + (concat v1 (repeat 0)) v2)
+                 (map + (concat v2 (repeat 0)) v1))]
+       (vec seq)))
+  ([ v1 v2 & vn]
+     (reduce vec+ (vec+ v1 v2) vn)))
+           
+
+(def prototypes [{ :delta-coods [[0 0] [0 1]]}])
+
+(defn place-piece-cood? [world boardid cood]
+  (let [board (boardid world)
+        peg (-> board :coods (get cood))]
+    (available? peg world boardid cood)))
+
+(defn place-piece? [world boardid piece]
+  (let [coods (-> piece :coods-map keys)]
+    (not-any? false? (map #(place-piece-cood? world boardid %) coods)))
+)
+
+(def players [{:playerid :p1 :boardid :c1 :name "C1" :status :active}
+              {:playerid :p2 :boardid :c2 :name "C2" :status :active}
+              {:playerid :p3 :boardid :c3 :name "C3" :status :active}
+              {:playerid :p4 :boardid :c4 :name "C4" :status :paused}])
+
+
+(defn take-turn [world player]
+  (let [opponent (rand-nth (opponents world player))]
+    (make-random-shot world player opponent)))
+
+(defn game-seq [world]
+  (lazy-seq
+   (let [next (reduce take-turn world (active-players world))]
+     (cons next (game-seq next)))))
+
+(defn run-game [world]
+    (doseq [w (take 10 (game-seq world))]
+      (println "=============")
+      (doseq [p (active-players w)]
+        (println (:name p))
+        (print-board w (:boardid p))
+        (println "---------"))
+      (println)))
+
+(defn place-piece [world boardid piece]
+  (let [coods (-> piece :coods-map keys)]
+    (reduce #(assoc-in %1 [boardid :coods %2] piece) world coods)))
+
+(defn random-place-piece [world player prototype]
+  (let [boardid (:boardid player)
+        coods (available-coods world boardid)
+        pieces (map make-piece-at (repeat prototype) coods)
+        valid-pieces (filter #(place-piece? world boardid %) pieces)]
+    (if (seq valid-pieces) (place-piece world boardid (rand-nth valid-pieces))
+        world)))
+
+(defn init-world [world]
+  (reduce #(random-place-piece %1 (first %2) (second %2))
+          world
+          (for [prototype prototypes
+                player (active-players world)]
+            [player prototype])))
+
+
+(def start-world {:dim [5 5]
+                  :players players})
+
+
+(defn -main [& args]
+  (run-game (init-world start-world))
+  )
