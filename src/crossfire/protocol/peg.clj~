@@ -1,6 +1,0 @@
-(ns crossfire.protocol.peg)
-
-(defprotocol Peg
-  (is-pegged? [this world boardid cood])
-  (available? [this world boardid cood])
-  (peg [this world boardid cood]))
