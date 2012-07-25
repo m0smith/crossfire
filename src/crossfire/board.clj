@@ -1,5 +1,5 @@
 (ns crossfire.board
-  (use [crossfire.protocol.peg]))
+  (use [crossfire.protocol.location]))
 
 (def display-map {
                   nil "."

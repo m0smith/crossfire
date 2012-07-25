@@ -1,8 +1,9 @@
 (ns crossfire.core
   (use [crossfire.board :only [available-coods get-peg-at print-final-boards]]
-       [crossfire.protocol.peg]
+       [crossfire.protocol.location]
        [crossfire.miss]
-       [crossfire.player :only [opponents active-players]]))
+       [crossfire.piece :only [random-place-piece]]
+       [crossfire.player :only [opponents active-players update-player-status]]))
 
 (def prototypes [{ :delta-coods [[0 0] [0 1]]}
                  { :delta-coods [[0 0] [1 0] [2 0]]}
@@ -11,19 +12,20 @@
 (def players [{:playerid :p1 :boardid :c1 :name "C1" :status :active}
               {:playerid :p2 :boardid :c2 :name "C2" :status :active}
               {:playerid :p3 :boardid :c3 :name "C3" :status :active}
-              {:playerid :p4 :boardid :c4 :name "C4" :status :paused}])
+              {:playerid :p4 :boardid :c4 :name "C4" :status :paused} ])
 
 (def start-world {:dim [10 4]
                   :players players})
 
 (defn take-shot [world player opponent cood]
-  (peg (get-peg-at world player cood) cood))
+  (place-peg (get-peg-at world player cood) cood))
 
-(defn place-peg [world opponent cood peg]
-  (assoc-in world [(opponent :boardid) :coods cood] peg))
 
 (defn game-running? [world]
   (> (count (active-players world)) 1))
+
+(defn place-peg-in-world [world player cood piece]
+  (place-peg-in-board piece world player cood))
 
 (defn take-turn
   "Taking turn has the following step:
@@ -41,9 +43,8 @@
       (println (:name player) " attacks " (:name opponent)
                " at " cood " with result " (:result  result))
       (-> world
-          (place-peg opponent cood (result :peg))
+          (place-peg-in-world opponent cood (result :peg))
           (update-player-status opponent)
-          
           )
       )
     world))
@@ -74,6 +75,6 @@
             [player prototype])))
 
 (defn -main [& args]
-  (runall (run-game (init-world start-world)))
+  (doall (run-game (init-world start-world)))
   
   )

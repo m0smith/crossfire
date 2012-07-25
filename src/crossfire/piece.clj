@@ -1,23 +1,14 @@
 (ns crossfire.piece
-  (use [crossfire.protocol.peg]
+  (use [crossfire.protocol.location]
        [crossfire.cood :only [cood+]]
        [crossfire.board :only [available-coods get-peg-at]]))
 
 (defrecord Piece [coods-map])
 
-
 (defn result [piece]
   (if (not-any? nil? (map :pegged? (vals (:coods-map piece))))
     :sunk :hit))
 
-(extend-type Piece
-  Peg
-  (is-pegged? [this world player cood] (get-in this [:coods-map cood :pegged?]))
-  (available? [this world player cood] (not (is-pegged? this world player cood)))
-  (display [this cood] (if (is-pegged? this nil nil cood) :hit :open))
-  (peg [this cood]
-    (let [new-peg (assoc-in this [ :coods-map cood :pegged?] true) ]
-      {:peg new-peg :result (result new-peg) :cood cood})))
 
 (defn make-piece-at [prototype cood]
   (let [coods (map cood+ (repeat cood) (:delta-coods prototype))
@@ -43,3 +34,13 @@
         valid-pieces (filter #(place-piece? world player %) pieces)]
     (if (seq valid-pieces) (place-piece world player (rand-nth valid-pieces))
         world)))
+
+(extend-type Piece
+  Location
+  (is-pegged? [this world player cood] (get-in this [:coods-map cood :pegged?]))
+  (available? [this world player cood] (not (is-pegged? this world player cood)))
+  (display [this cood] (if (is-pegged? this nil nil cood) :hit :open))
+  (place-peg-in-board [this world player cood] (place-piece world player this))
+  (place-peg [this cood]
+    (let [new-peg (assoc-in this [ :coods-map cood :pegged?] true) ]
+      {:peg new-peg :result (result new-peg) :cood cood})))

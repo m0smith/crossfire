@@ -1,6 +1,6 @@
 (ns crossfire.player
   (use [crossfire.board :only [get-board get-peg-at available-coods]]
-       [crossfire.protocol.peg]))
+       [crossfire.protocol.location]))
 
 (defn all-players [world]
   (let [players (:players world)]
