@@ -1,5 +1,5 @@
 (ns crossfire.core
-  (use [crossfire.board :only [available-coods get-peg-at print-final-boards]]
+  (use [crossfire.board :only [available-coods get-peg-at print-final-boards print-boards]]
        [crossfire.protocol.location]
        [crossfire.miss]
        [crossfire.piece :only [random-place-piece]]
@@ -18,7 +18,7 @@
                   :players players})
 
 (defn take-shot [world player opponent cood]
-  (place-peg (get-peg-at world player cood) cood))
+  (place-peg (get-peg-at world opponent cood) cood))
 
 
 (defn game-running? [world]
@@ -60,11 +60,13 @@
 
 (defn run-game [world]
   (let [game-players (active-players world)]
+    (print-boards world game-players)
     (for [w (take 100 (game-seq world))]
-      (if (not (game-running? w))
-        (do
-          (print-final-boards w game-players (map :name (active-players w)))
-          w)))))
+      (do 
+          (if (not (game-running? w))
+            (do
+              (print-final-boards w game-players (map :name (active-players w)))
+              w))))))
 
 
 (defn init-world [world]
