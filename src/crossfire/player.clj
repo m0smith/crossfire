@@ -1,5 +1,5 @@
 (ns crossfire.player
-  (use [crossfire.board :only [get-board get-peg-at available-coods]]
+  (use [crossfire.board :only [get-board get-peg-at open-coods]]
        [crossfire.protocol.location]))
 
 (defn all-players [world]
@@ -18,7 +18,7 @@
 
 (defn player-status [world player]
   (let [board (get-board world player)
-        coods (available-coods world player)
+        coods (open-coods world player)
         stats (map #(display (get-peg-at world player %) %) coods)]
     (some #(= % :open) stats)))
 
