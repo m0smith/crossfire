@@ -37,3 +37,14 @@
         (do
           (println (:name player) " has been defeated")
           (update-in world [:players] compute-updated-players (:playerid player) :defeated)))))
+
+(defn take-shot [world player opponent cood]
+  (merge {:opponent opponent} (place-peg (get-peg-at world opponent cood) cood)) )
+
+(defn make-move [world player]
+  (let [opponent (rand-nth (opponents world player))
+        cood (rand-nth (open-coods world opponent))
+        result (take-shot world player opponent cood)]
+    (println (:name player) " attacks " (-> result :opponent :name)
+               " at " cood " with result " (:result  result))
+    result))

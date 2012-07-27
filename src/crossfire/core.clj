@@ -4,7 +4,7 @@
        [crossfire.protocol.location]
        [crossfire.miss]
        [crossfire.piece :only [random-place-piece]]
-       [crossfire.player :only [opponents active-players update-player-status]]))
+       [crossfire.player :only [opponents active-players update-player-status make-move]]))
 
 (def prototypes [{ :delta-coods [[0 0] [0 1]]}
                  { :delta-coods [[0 0] [1 0] [2 0]]}
@@ -17,9 +17,6 @@
 
 (def start-world {:dim [10 4]
                   :players players})
-
-(defn take-shot [world player opponent cood]
-  (place-peg (get-peg-at world opponent cood) cood))
 
 
 (defn game-running? [world]
@@ -38,13 +35,10 @@
      Return the new state of the world"
   [world player]
   (if (game-running? world)
-    (let [opponent (rand-nth (opponents world player))
-          cood (rand-nth (open-coods world opponent))
-          result (take-shot world player opponent cood)]
-      (println (:name player) " attacks " (:name opponent)
-               " at " cood " with result " (:result  result))
+    (let [result (make-move world player)
+          opponent (:opponent result)]
       (-> world
-          (place-peg-in-world opponent cood (result :peg))
+          (place-peg-in-world opponent (:cood result) (:peg result))
           (update-player-status opponent)
           )
       )
@@ -57,25 +51,17 @@
        (cons next (game-seq next))
        (cons next nil)))))
 
-(defn run-game [world]
-  (let [game-players (active-players world)]
-    (print-boards world game-players)
-    (for [w (take 100 (game-seq world))]
-      (do
-          (if (not (game-running? w))
-            (do
-              (print-final-boards w game-players (map :name (active-players w)))
-              w))))))
-
-
 (defn init-world [world]
-  (reduce #(apply (partial random-place-piece %1) %2)
+  (reduce #(apply random-place-piece %1 %2)
           world
           (for [prototype prototypes
                 player (active-players world)]
             [player prototype])))
 
 (defn -main [& args]
-  (doall (run-game (init-world start-world)))
-  
-  )
+  (let [gen (init-world start-world)
+        game (game-seq gen)
+        players (active-players gen)]
+    (print-boards gen players)
+    (let [winner (first (active-players (last game)))]
+      (print-final-boards (last game) players winner))))
