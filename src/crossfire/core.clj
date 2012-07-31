@@ -1,10 +1,10 @@
 (ns crossfire.core
-  (use [crossfire.board :only [open-coods get-peg-at print-final-boards
-                               print-boards]]
-       [crossfire.protocol.location]
-       [crossfire.miss]
-       [crossfire.piece :only [random-place-piece]]
-       [crossfire.player :only [opponents active-players update-player-status make-move]]))
+  (:use [crossfire.board :only [open-coods get-peg-at print-final-boards
+                                print-boards]]
+        [crossfire.protocol.location]
+        [crossfire.miss]
+        [crossfire.piece :only [random-place-piece]]
+        [crossfire.player :only [opponents active-players update-player-status make-move]]))
 
 (def prototypes [{ :delta-coods [[0 0] [0 1]]}
                  { :delta-coods [[0 0] [1 0] [2 0]]}

@@ -1,7 +1,7 @@
 (ns crossfire.piece
-  (use [crossfire.protocol.location]
-       [crossfire.cood :only [cood+]]
-       [crossfire.board :only [empty-cood? empty-coods get-peg-at]]))
+  (:use [crossfire.protocol.location]
+        [crossfire.cood :only [cood+]]
+        [crossfire.board :only [empty-cood? empty-coods get-peg-at]]))
 
 (defrecord Piece [coods-map])
 
