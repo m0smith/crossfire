@@ -1,6 +1,6 @@
 (ns crossfire.miss
-  (use [crossfire.protocol.location]
-       ))
+  (:use [crossfire.protocol.location]
+        ))
 
 
 (defn place-peg-in-board* [world player cood piece]

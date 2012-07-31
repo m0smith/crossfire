@@ -9,4 +9,6 @@
 /checkouts
 /.lein-deps-sum
 /screenlog*
-
+/.crossover-cljs
+/.lein-cljsbuild-compiler-*
+main.js
