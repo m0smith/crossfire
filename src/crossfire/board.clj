@@ -1,5 +1,5 @@
 (ns crossfire.board
-  (use [crossfire.protocol.location]))
+  (:use [crossfire.protocol.location :only [display open?]]))
 
 (def display-map {nil "."
                   :miss "!"
