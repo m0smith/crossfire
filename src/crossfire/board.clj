@@ -1,5 +1,6 @@
 (ns crossfire.board
-  (:use [crossfire.protocol.location :only [display open?]]))
+  (:require [crossfire.miss]
+            [crossfire.protocol.location :as loc]))
 
 (def display-map {nil "."
                   :miss "!"
@@ -22,7 +23,8 @@
     (doseq [row (partition width
                            (for [y (range height) x (range width)]
                              (let [p (get-peg-at world player [x y])]
-                               (display-map (display p [x y])))))]
+                               (display-map (loc/display p [x y]))
+                               )))]
       (println row))))
 
 (defn print-boards [world players]
@@ -47,7 +49,7 @@
   "Return true if a peg can be placed at cood.  Return nil if cood is
 not in the board or if it already has a peg."
   (and (board-contains? world player cood)
-       (open? (get-peg-at world player cood) cood)))
+       (loc/open? (get-peg-at world player cood) cood)))
 
 (defn matching-coods [pred world player]
   "Return a lazy-seq of the all the coods for which pred returns

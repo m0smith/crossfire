@@ -5,7 +5,7 @@
   :hooks [leiningen.cljsbuild]
   :source-path "src"
   :cljsbuild {
-    :builds [{:source-path "src-cljs" :compiler {:output-to "main.js"}}]
+    :builds [{:source-path "src-cljs" :compiler {:output-to "crossfire.js"}}]
     :crossovers [crossfire]
   }
   :main crossfire.core)

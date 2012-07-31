@@ -1,9 +1,8 @@
 (ns crossfire.core
+  (:require [crossfire.protocol.location :as loc])
   (:use [crossfire.board :only [open-coods get-peg-at print-final-boards
                                 print-boards]]
-        [crossfire.protocol.location]
-        [crossfire.miss]
-        [crossfire.piece :only [random-place-piece]]
+         [crossfire.piece :only [random-place-piece]]
         [crossfire.player :only [opponents active-players update-player-status make-move]]))
 
 (def prototypes [{ :delta-coods [[0 0] [0 1]]}
@@ -23,7 +22,7 @@
   (> (count (active-players world)) 1))
 
 (defn place-peg-in-world [world player cood piece]
-  (place-peg-in-board piece world player cood))
+  (loc/place-peg-in-board piece world player cood))
 
 (defn take-turn
   "Taking turn has the following step:

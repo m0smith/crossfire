@@ -1,5 +1,6 @@
 (ns crossfire.piece
-  (:use [crossfire.protocol.location]
+  (:require [crossfire.protocol.location :as loc])
+  (:use 
         [crossfire.cood :only [cood+]]
         [crossfire.board :only [empty-cood? empty-coods get-peg-at]]))
 
@@ -42,7 +43,7 @@
   )
 
 (extend-type Piece
-  Location
+  loc/Location
   (open? [this cood] (not (is-pegged? this cood)))
   (display [this cood] (if (is-pegged? this  cood) :hit :open))
   (place-peg-in-board [this world player cood] (place-piece world player this))

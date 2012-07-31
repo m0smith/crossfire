@@ -1,6 +1,7 @@
 (ns crossfire.player
+  (:require [ crossfire.protocol.location :as loc])
   (:use [crossfire.board :only [get-board get-peg-at open-coods]]
-        [crossfire.protocol.location]))
+        ))
 
 (defn all-players [world]
   (let [players (:players world)]
@@ -19,7 +20,7 @@
 (defn player-status [world player]
   (let [board (get-board world player)
         coods (open-coods world player)
-        stats (map #(display (get-peg-at world player %) %) coods)]
+        stats (map #(loc/display (get-peg-at world player %) %) coods)]
     (some #(= % :open) stats)))
 
 
@@ -39,7 +40,7 @@
           (update-in world [:players] compute-updated-players (:playerid player) :defeated)))))
 
 (defn take-shot [world player opponent cood]
-  (merge {:opponent opponent} (place-peg (get-peg-at world opponent cood) cood)) )
+  (merge {:opponent opponent} (loc/place-peg (get-peg-at world opponent cood) cood)) )
 
 (defn make-move [world player]
   (let [opponent (rand-nth (opponents world player))
