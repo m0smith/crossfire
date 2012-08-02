@@ -27,7 +27,7 @@
 (defn place-piece [world player piece]
   (let [boardid (:boardid player)
         coods (-> piece :coods-map keys)]
-    (reduce #(assoc-in %1 [boardid :coods %2] piece) world coods)))
+    (reduce #(assoc-in %1 [:boards boardid :coods %2] piece) world coods)))
 
 (defn random-place-piece [world player prototype]
   (let [coods (empty-coods world player)

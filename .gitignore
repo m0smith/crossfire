@@ -10,5 +10,5 @@
 /.lein-deps-sum
 /screenlog*
 /.crossover-cljs
-/.lein-cljsbuild-compiler-*
-main.js
+/.lein-*
+crossfire.js

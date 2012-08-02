@@ -2,7 +2,7 @@
   (:require [crossfire.protocol.location :as loc]))
 
 (defn place-peg-in-board* [world player cood piece]
-  (assoc-in world [(player :boardid) :coods cood] piece))
+  (assoc-in world [:boards (player :boardid) :coods cood] piece))
 
 (defrecord Miss [cood])
 

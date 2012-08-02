@@ -14,8 +14,13 @@
               {:playerid :p3 :boardid :c3 :name "C3" :status :active}
               {:playerid :p4 :boardid :c4 :name "C4" :status :paused} ])
 
-(def start-world {:dim [10 4]
-                  :players players})
+(def start-world {
+                  :players players
+                  :boards
+                  { :c1 { :dim [6 8]}
+                    :c2 { :dim [8 6]}
+                    :c3 { :dim [12 4]}
+                   }})
 
 
 (defn game-running? [world]

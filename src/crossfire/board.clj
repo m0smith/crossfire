@@ -8,18 +8,22 @@
                   :open "O"})
 
 (defn get-board [world player]
-  (world (player :boardid)))
+  (get-in world [:boards (player :boardid)]))
+
+(defn get-dimensions
+  ([board] (:dim board))
+  ([world player] (get-dimensions (get-board world player))))
 
 (defn get-peg-at [world player cood]
   (get-in (get-board world player) [:coods cood]))
 
 (defn board-contains? [world player cood]
-  (let [[width height] (:dim world)
+  (let [[width height] (get-dimensions world player)
         [x y] cood]
     (and (< x width) (< y height))))
 
 (defn print-board [world player]
-  (let [[width height] (:dim world)]
+  (let [[width height] (get-dimensions world player)]
     (doseq [row (partition width
                            (for [y (range height) x (range width)]
                              (let [p (get-peg-at world player [x y])]
@@ -54,7 +58,7 @@ not in the board or if it already has a peg."
 (defn matching-coods [pred world player]
   "Return a lazy-seq of the all the coods for which pred returns
 true. Pred is passed world, player and cood"
-  (let [[width height] (:dim world)]
+  (let [[width height]  (get-dimensions world player)]
     (for [y (range height)
           x (range width)
           :when (pred world player [x y])]
