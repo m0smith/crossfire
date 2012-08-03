@@ -10,3 +10,6 @@
        :cood
        :result one of :miss :hit or :sunk
      }"))
+
+(defn place-peg-in-board* [world player cood piece]
+  (assoc-in world [:boards (player :boardid) :coods cood] piece))

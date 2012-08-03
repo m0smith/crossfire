@@ -1,9 +1,8 @@
 (ns crossfire.core
   (:require [crossfire.protocol.location :as loc])
-  (:use [crossfire.board :only [open-coods get-peg-at print-final-boards
-                                print-boards]]
+  (:use [crossfire.board :only [  print-final-boards  print-boards]]
          [crossfire.piece :only [random-place-piece]]
-        [crossfire.player :only [opponents active-players update-player-status make-move]]))
+        [crossfire.player :only [ active-players update-player-status make-move]]))
 
 (def prototypes [{ :delta-coods [[0 0] [0 1]]}
                  { :delta-coods [[0 0] [1 0] [2 0]]}
