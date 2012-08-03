@@ -12,4 +12,4 @@
      }"))
 
 (defn place-peg-in-board* [world player cood piece]
-  (assoc-in world [:boards (player :boardid) :coods cood] piece))
+  (assoc-in world [:boards (:boardid player) :coods cood] piece))

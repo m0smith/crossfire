@@ -1,17 +1,20 @@
 (ns crossfire.core
-  (:require [crossfire.protocol.location :as loc])
+  (:require [crossfire.protocol.location :as loc]
+            [crossfire.protocol.player :as P]
+            [crossfire.player.randomai :as ai])
   (:use [crossfire.board :only [  print-final-boards  print-boards]]
-         [crossfire.piece :only [random-place-piece]]
-        [crossfire.player :only [ active-players update-player-status make-move]]))
+        [crossfire.piece :only [random-place-piece]]
+        [crossfire.player :only [ active-players update-player-status]]))
 
 (def prototypes [{ :delta-coods [[0 0] [0 1]]}
                  { :delta-coods [[0 0] [1 0] [2 0]]}
                  { :delta-coods [[0 0] [1 0] [1 1]]}])
 
-(def players [{:playerid :p1 :boardid :c1 :name "C1" :status :active}
-              {:playerid :p2 :boardid :c2 :name "C2" :status :active}
-              {:playerid :p3 :boardid :c3 :name "C3" :status :active}
-              {:playerid :p4 :boardid :c4 :name "C4" :status :paused} ])
+(def players [(ai/make-random-ai :p1 :c1 "C1" :active)
+              (ai/make-random-ai :p2 :c2 "C2" :active)
+              (ai/make-random-ai :p3 :c3 "C3" :active)
+              (ai/make-random-ai :p4 :c4 "C4" :paused)
+              ])
 
 (def start-world {
                   :players players
@@ -38,7 +41,9 @@
      Return the new state of the world"
   [world player]
   (if (game-running? world)
-    (let [result (make-move world player)
+    
+    (let [fut (future (P/make-move player world))
+          result  (deref fut) 
           opponent (:opponent result)]
       (-> world
           (place-peg-in-world opponent (:cood result) (:peg result))

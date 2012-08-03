@@ -8,7 +8,7 @@
                   :open "O"})
 
 (defn get-board [world player]
-  (get-in world [:boards (player :boardid)]))
+  (get-in world [:boards (:boardid player)]))
 
 (defn get-dimensions
   ([board] (:dim board))
