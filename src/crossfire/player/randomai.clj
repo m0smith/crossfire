@@ -12,8 +12,6 @@
   (let [opponent (rand-nth (opponents world player))
         cood (rand-nth (open-coods world opponent))
         result (take-shot world player opponent cood)]
-    (println (:name player) " attacks " (-> result :opponent :name)
-             " at " cood " with result " (:result  result))
     result))
 
 

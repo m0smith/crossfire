@@ -45,6 +45,8 @@
     (let [fut (future (P/make-move player world))
           result  (deref fut) 
           opponent (:opponent result)]
+      (println (:name player) " attacks " (:name opponent)
+               " at " ( :cood result) " with result " (:result result))
       (-> world
           (place-peg-in-world opponent (:cood result) (:peg result))
           (update-player-status opponent)
