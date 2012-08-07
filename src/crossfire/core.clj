@@ -1,7 +1,8 @@
 (ns crossfire.core
   (:require [crossfire.protocol.location :as loc]
             [crossfire.protocol.player :as P]
-            [crossfire.player.randomai :as ai])
+            [crossfire.player.randomai :as ai]
+            [crossfire.player.human :as human])
   (:use [crossfire.board :only [  print-final-boards  print-boards]]
         [crossfire.piece :only [random-place-piece]]
         [crossfire.player :only [ active-players update-player-status]]))
@@ -10,7 +11,7 @@
                  { :delta-coods [[0 0] [1 0] [2 0]]}
                  { :delta-coods [[0 0] [1 0] [1 1]]}])
 
-(def players [(ai/make-random-ai :p1 :c1 "C1" :active)
+(def players [(human/make-human-player :p1 :c1 "C1" :active)
               (ai/make-random-ai :p2 :c2 "C2" :active)
               (ai/make-random-ai :p3 :c3 "C3" :active)
               (ai/make-random-ai :p4 :c4 "C4" :paused)
@@ -42,8 +43,7 @@
   [world player]
   (if (game-running? world)
     
-    (let [fut (future (P/make-move player world))
-          result  (deref fut) 
+    (let [result (P/make-move player world)
           opponent (:opponent result)]
       (println (:name player) " attacks " (:name opponent)
                " at " ( :cood result) " with result " (:result result))
@@ -74,4 +74,5 @@
         players (active-players gen)]
     (print-boards gen players)
     (let [winner (first (active-players (last game)))]
-      (print-final-boards (last game) players winner))))
+      (print-final-boards (last game) players winner))
+    (shutdown-agents)))

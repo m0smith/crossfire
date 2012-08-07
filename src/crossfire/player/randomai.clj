@@ -8,7 +8,7 @@
 (defn make-random-ai [playerid boardid name status]
   (RandomAI. playerid boardid name status))
 
-(defn make-move* [world player]
+(defn- make-move* [world player]
   (let [opponent (rand-nth (opponents world player))
         cood (rand-nth (open-coods world opponent))
         result (take-shot world player opponent cood)]
