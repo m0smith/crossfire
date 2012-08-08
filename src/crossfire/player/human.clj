@@ -1,39 +1,15 @@
 (ns crossfire.player.human
-  (:use [crossfire.player :only [opponents take-shot]]
-        [crossfire.board :only [open-coods print-board]])
-  ( :require [crossfire.protocol.player :as P]))
+  (:require [crossfire.protocol.player :as P]
+            [crossfire.protocol.ui :as ui])
+  (:use [crossfire.player :only [take-shot]]))
 
-(defrecord Human [playerid boardid name status])
+(defrecord Human [playerid boardid name status ui])
 
-(defn make-human-player [playerid boardid name status]
-  (Human. playerid boardid name status))
-
-(defn choose-opponent [world player]
-  (let [ops (opponents world player)
-        opmap (zipmap (map :playerid ops) ops)]
-    (if (> (count ops) 1)
-      (do
-        (print "Pick opponent:")
-        (println (map :playerid ops))
-        (let [rtnval (get opmap (read-string (read-line)))]
-          (println opmap rtnval)
-          rtnval))
-      (first ops))))
-
-(defn choose-cood [world opponent]
-  (print-board world opponent)
-  (print "Choose cood [x y]:")
-  (let [cood (read-string (read-line))]
-    cood)
-)
-
-(defn- human-make-move* [world player]
-  
-  (let [opponent (choose-opponent world player)
-        cood (choose-cood world opponent)
-        result (take-shot world player opponent cood)]
-    result))
+(defn make-human-player [playerid boardid name status ui]
+  (Human. playerid boardid name status ui))
 
 (extend-type Human
   P/Player
-  (make-move [player world] (human-make-move* world player)))
+  (make-move [player world]
+    (let [[opponent cood] (ui/choose-shot (:ui player) world player)]
+      (take-shot world player opponent cood))))
