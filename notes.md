@@ -1,5 +1,15 @@
 # Conventions
 
+This document contains the decisions and design for Crossfire.
+
+## Messages
+
+* `take-turn`
+* `update-state`
+* `request-state`
+
+## Data
+
 * `board`: a map of the state of a board including:
    * `:coods` :  a sparse map of `cood` to `Peg`, can be nil
 * `cood`: a vector [x y] that represents a position in the world
@@ -19,5 +29,6 @@
     * `:board-1` : `board` for player 1
     * `:board-2` : `board` for player 2
     * `:dim` : the size of the world as a vector [width height].  The upper left is the first location and has a cood of [0 0].
+* `worlds`: a map of 
 
    
