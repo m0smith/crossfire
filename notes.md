@@ -6,19 +6,21 @@ This document contains the decisions and design for Crossfire.
 The game is divided into rounds in which each active player takes a turn.  Players my become inactive by losing.
 Once only one player is active, the game is over.
 
-A turn consists of a looop the following steps:
-
+A turn consists of a looop the following steps until the game is over:
 
 1. Send a `take-turn` message to the current active player.
 2. Player sends the `take-turn-response` to the engine.
 3. Engine updates world state
     * Validate the turn response
     * Update the opponent board
+    * Update opponent status
+    * Assign current player
+    * Test for end of game
 4. Engine sends `update-state` to all players
 
 ## Actors
 
-* Player
+* Player: both player and opponent
 * Engine
 
 ## Messages
@@ -27,6 +29,12 @@ A turn consists of a looop the following steps:
 * `take-turn-response`
 * `update-state`
 * `request-state`
+
+### Message Passing
+
+In order to accomodate messages in both Clojure and ClojureScript, atoms will be used to pass messages.
+
+See http://stackoverflow.com/questions/12545792/is-there-a-single-publish-subscribe-that-will-work-in-both-clojure-and-clojuresc
 
 ## Data
 
