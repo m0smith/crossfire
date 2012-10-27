@@ -2,9 +2,29 @@
 
 This document contains the decisions and design for Crossfire.
 
+## Game play overview
+The game is divided into rounds in which each active player takes a turn.  Players my become inactive by losing.
+Once only one player is active, the game is over.
+
+A turn consists of a looop the following steps:
+
+
+1 Send a `take-turn` message to the current active player.
+2 Player sends the `take-turn-response` to the engine.
+3 Engine updates world state
+    * Validate the turn response
+    * Update the opponent board
+4 Engine sends `update-state` to all players
+
+## Actors
+
+* Player
+* Engine
+
 ## Messages
 
 * `take-turn`
+* `take-turn-response`
 * `update-state`
 * `request-state`
 
