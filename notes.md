@@ -9,12 +9,12 @@ Once only one player is active, the game is over.
 A turn consists of a looop the following steps:
 
 
-1 Send a `take-turn` message to the current active player.
-2 Player sends the `take-turn-response` to the engine.
-3 Engine updates world state
+1. Send a `take-turn` message to the current active player.
+2. Player sends the `take-turn-response` to the engine.
+3. Engine updates world state
     * Validate the turn response
     * Update the opponent board
-4 Engine sends `update-state` to all players
+4. Engine sends `update-state` to all players
 
 ## Actors
 
