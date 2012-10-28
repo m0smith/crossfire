@@ -34,7 +34,10 @@ A turn consists of a looop the following steps until the game is over:
 
 In order to accomodate messages in both Clojure and ClojureScript, atoms will be used to pass messages.
 
-See http://stackoverflow.com/questions/12545792/is-there-a-single-publish-subscribe-that-will-work-in-both-clojure-and-clojuresc
+See 
+
+* http://stackoverflow.com/questions/12545792/is-there-a-single-publish-subscribe-that-will-work-in-both-clojure-and-clojuresc
+* http://www.pauldee.org/blog/2012/clojurescript-and-node-js-an-experience-report/
 
 ## Data
 
