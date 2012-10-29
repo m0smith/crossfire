@@ -39,6 +39,12 @@ See
 * http://stackoverflow.com/questions/12545792/is-there-a-single-publish-subscribe-that-will-work-in-both-clojure-and-clojuresc
 * http://www.pauldee.org/blog/2012/clojurescript-and-node-js-an-experience-report/
 
+## UI
+
+### Swing
+
+https://github.com/quil/quil
+
 ## Data
 
 * `board`: a map of the state of a board including:
