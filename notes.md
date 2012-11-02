@@ -32,7 +32,28 @@ A turn consists of a looop the following steps until the game is over:
 
 ### Message Passing
 
-In order to accomodate messages in both Clojure and ClojureScript, atoms will be used to pass messages.
+In order to accomodate messages in both Clojure and ClojureScript, atoms will be used to pass messages.  To send a message
+use `ames-send`.  The first argument is the name of the message function for the recipient to execute as either a string or a symbol.
+The rest of the arguments are the arguments to pass to the message function.  These should be standard Clojure objects only as
+they need to be able to be executed in either Clojure or ClojureScript.
+
+### Message Functions
+
+A message is simply the name of a message function to call and the arguments to pass to that function.  The message function
+is a standard function that exists in the recipient namespace and accepts one more argument than the arguments passed.  The first
+argument to a message function will be the result of calling the `message-sentinal` function passed to the `ames-create` method.  
+This allows message functions to be protocols.
+
+### AMES - Synchronous Message 
+
+AMES allows the system to send asynchonous messages.
+
+*  `ames-create`  Creates an ames mailbox.  Returns a `ames`. Arguments:
+    *  `message-sentinal`: A function that will be called and the result passed as the first argument to the message function
+*  `ames-send` Sends a message to a mailbox
+    * `ames`: The mailbox creted with `ames-create`
+    * `message-function`: The name of the fucntion to send as either a String or a Symbol
+    * `args`: The optional arguments to pass
 
 See 
 
