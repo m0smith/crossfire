@@ -32,4 +32,5 @@
 
 (extend-type TTY
   ui/UI
+  (init [ui world player])
   (choose-shot [ui world player] (make-move* world player)))

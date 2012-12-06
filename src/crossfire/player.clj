@@ -3,12 +3,23 @@
   (:use [crossfire.board :only [get-board get-peg-at open-coods]]
         ))
 
+
+
 (defn all-players [world]
   (let [players (:players world)]
     players))
 
+(defn match-in? [val kys]
+  (fn [m] (when (#{val} (get-in m kys))
+            m)))
+(defn get-player [world playerid]
+   (some (match-in? playerid [:playerid]) (all-players world)))
+
+(defn active-player? [player]
+  ( #{:active} (:status player)))
+
 (defn active-players [world]
-  (filter #( #{:active} (:status %)) (all-players world)))
+  (filter active-player? (all-players world)))
 
 
 (defn opponent? [player other-player]
@@ -40,6 +51,10 @@
           (update-in world [:players] compute-updated-players (:playerid player) :defeated)))))
 
 (defn take-shot [world player opponent cood]
-  (merge {:opponent opponent} (loc/place-peg (get-peg-at world opponent cood) cood)) )
+  (merge {:opponent opponent
+          :worldid (:worldid world)
+          :playerid (:playerid player)
+          :opponentid (:playerid opponent)}
+         (loc/place-peg (get-peg-at world opponent cood) cood)) )
 
 

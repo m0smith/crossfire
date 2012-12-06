@@ -2,10 +2,23 @@
   (:require [crossfire.miss]
             [crossfire.protocol.location :as loc]))
 
-(def display-map {nil "."
-                  :miss "!"
-                  :hit "X"
-                  :open "O"})
+(def display-dictionary
+  {nil "."
+   :miss "!"
+   :hit "X"
+   :open "O"})
+
+(def opponent-dictionary
+  {nil :empty
+   :miss :miss
+   :hit :hit
+   :open :empty})
+
+(def player-dictionary
+  {nil :empty
+   :miss :miss
+   :hit :hit
+   :open :open})
 
 (defn get-board [world player]
   (get-in world [:boards (:boardid player)]))
@@ -22,14 +35,25 @@
         [x y] cood]
     (and (< x width) (< y height))))
 
+(defn all-board-locations
+  ([world player dictionary]
+      (let [[width height] (get-dimensions world player)]
+        (for [y (range height) x (range width)]
+          (let [p (get-peg-at world player [x y])]
+            [[x y] (dictionary (loc/display p [x y]))]
+            )))))
+
+(defn player-board-locations [world player]
+  (all-board-locations world player player-dictionary))
+
+(defn opponent-board-locations [world opponent]
+  (all-board-locations world opponent opponent-dictionary))
+
+
 (defn print-board [world player]
   (let [[width height] (get-dimensions world player)]
-    (doseq [row (partition width
-                           (for [y (range height) x (range width)]
-                             (let [p (get-peg-at world player [x y])]
-                               (display-map (loc/display p [x y]))
-                               )))]
-      (println row))))
+    (doseq [row (partition width (all-board-locations world player display-dictionary))]
+      (println (map second row)))))
 
 (defn print-boards [world players]
   (doseq [p players]

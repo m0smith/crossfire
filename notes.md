@@ -19,5 +19,6 @@
     * `:board-1` : `board` for player 1
     * `:board-2` : `board` for player 2
     * `:dim` : the size of the world as a vector [width height].  The upper left is the first location and has a cood of [0 0].
+* `worlds`: an atom that holds a map of `worldid` to `world`
 
    

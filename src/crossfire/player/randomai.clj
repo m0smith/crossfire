@@ -3,10 +3,7 @@
         [crossfire.board :only [open-coods]])
   ( :require [crossfire.protocol.player :as P]))
 
-(defrecord RandomAI [playerid boardid name status])
-
-(defn make-random-ai [playerid boardid name status]
-  (RandomAI. playerid boardid name status))
+(defrecord RandomAI [playerid boardid name status ui])
 
 (defn- make-move* [world player]
   (let [opponent (rand-nth (opponents world player))
@@ -14,7 +11,6 @@
         result (take-shot world player opponent cood)]
     result))
 
-
 (extend-type RandomAI
   P/Player
-  (make-move [player world] (make-move* world player)))
+  (make-move [player world callback] (callback (make-move* world player)) ))
