@@ -11,6 +11,12 @@
         ))
 
 
+
+
+
+
+
+
 (def players [(human/make-human-player :p1 :c1 "C1" :active seesaw/create-ui)
               (ai/->RandomAI :p2 :c2 "C2" :active (headless/->Headless))
               (ai/->RandomAI :p3 :c3 "C3" :active (headless/->Headless))

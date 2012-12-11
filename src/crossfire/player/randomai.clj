@@ -1,16 +1,22 @@
 (ns crossfire.player.randomai
-  (:use [crossfire.player :only [opponents take-shot]]
-        [crossfire.board :only [open-coods]])
-  ( :require [crossfire.protocol.player :as P]))
+  (:use [crossfire.board :only [empty-locations get-board ]]
+        [crossfire.player :only [place-piece! add-player!]]))
 
-(defrecord RandomAI [playerid boardid name status ui])
+(defn randomly-place-piece! [worldref playerid piece-template]
+  (let [random-locs (shuffle (empty-locations (get-board worldref playerid)))
+        pp! (partial place-piece! worldref playerid piece-template) ]
+    (loop [[start & more] random-locs]
+      (if start
+        (let [piece (pp! start)]
+          (if piece
+            piece
+            (recur more)))))))
 
-(defn- make-move* [world player]
-  (let [opponent (rand-nth (opponents world player))
-        cood (rand-nth (open-coods world opponent))
-        result (take-shot world player opponent cood)]
-    result))
+(defn randomai-watcher [key _ __ new]
+  (println "randomai-watcher:" key new))
 
-(extend-type RandomAI
-  P/Player
-  (make-move [player world callback] (callback (make-move* world player)) ))
+(defn add-randomai-player! [worldref playerid name watcher templates]
+  (add-player! worldref playerid name watcher)
+  (doseq [tmpl templates]
+    (randomly-place-piece! worldref playerid tmpl)))
+
