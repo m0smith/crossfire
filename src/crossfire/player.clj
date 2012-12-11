@@ -1,6 +1,7 @@
 (ns crossfire.player
   (:use [crossfire.board :only [create-board empty-locations get-board]]
         [crossfire.cood :only [cood+]]
+        [crossfire.world :only [with-world]]
         [clojure.set :only [difference]]))
 
 ;; ----------------------------------------
@@ -13,8 +14,13 @@
 ;; 
 ;; ---------------------------------------
 
-(defn all-players [world]
-  (:players @world))
+
+
+(defn all-players [worldref]
+  (with-world [w worldref]
+    (:players w)))
+
+(defn opponents [worldref playerid])
 
 (defn- new-player [playerid name]
   {:playerid playerid
@@ -32,14 +38,10 @@
                     (update-in [:seqid] inc))))
 
 
-(defn get-player* [world playerid]
-  (get-in world [:players playerid]))
-
 (defn get-player [worldref playerid]
-  (get-player* @worldref playerid)
+  (with-world [world worldref]
+    (get-in world [:players playerid]))
   )
-
-
 
 (defn make-piece-at "A template is a seq of coods. Return a seq of coods with cood applied to each element
 of template"
