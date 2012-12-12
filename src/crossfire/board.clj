@@ -1,4 +1,5 @@
-(ns crossfire.board)
+(ns crossfire.board
+  (:use [crossfire.world :only [with-world]]))
 
 ;;----------------------------------------
 ;; BOARD
@@ -29,7 +30,8 @@
 
 (defn get-board
   ([worldref playerid]
-     (get-in @worldref [:players playerid :board]))
+     (with-world [world worldref]
+       (get-in world [:players playerid :board])))
   ( [player]
       (:board player)))
 
@@ -61,7 +63,6 @@ second : value"
   ([board dictionary]
      (let [[width height] (get-dimensions board)
            coods (:coods board)]
-       (println "all-location-cvals:" width height board)
        (for [y (range height) x (range width)]
          [[x y] (dictionary (coods [x y]))] ))))
             
@@ -75,8 +76,11 @@ the desired values will just do the trick"
 (defn empty-locations
   ([board] (empty-locations board player-dictionary))
   ([board dictionary] (map first (filted-location-cvals board #{:empty} dictionary))))
-              
 
+(defn open-locations
+  ([board] (open-locations board player-dictionary))
+  ([board dictionary] (map first (filted-location-cvals board #{:open} dictionary))))
+              
 ;; (defn player-board-locations [world player]
 ;;   (all-board-locations world player player-dictionary))
 
