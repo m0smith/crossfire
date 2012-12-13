@@ -1,17 +1,23 @@
 (ns crossfire.ui.seesaw
   (:use [seesaw core graphics]
-        [crossfire.player.randomai :only [ add-randomai-player! randomai-watcher ]]
+        [crossfire.player.randomai :only [ add-randomai-player! randomai-watcher]]
         [crossfire.world :only [create-world get-world start-world!]]
         [crossfire.board :only [all-location-cvals display-dictionary player-dictionary
                                 opponent-dictionary get-dimensions
                                 get-board]]
-        [crossfire.player :only [get-player all-players]]))
+        [crossfire.player :only [get-player all-players opponents-of]]))
 
 (def prototypes [ [[0 0] [0 1]]
                   [[0 0] [1 0] [2 0]]
                   [[0 0] [1 0] [1 1]]])
 
 (def root-frame (frame :size [500 :by 500]))
+
+(def class-dictionary
+  {:open :grey
+   :hit :red
+   :miss :white
+   :empty :blue})
 
 ;; (defn choose-opponent [world player]
 ;;   (let [ops (opponents world player)
@@ -107,8 +113,9 @@
   root)
 
 (defn panels [world player]
-  [ (player-panels world (map (partial get-player world)[:p2 :p3]) player-dictionary)
-    (player-panels world [player] player-dictionary)])
+  (let [opponents (opponents-of world (:playerid player))]
+    [ (player-panels world (map (partial get-player world) (map :playerid opponents)) player-dictionary)
+      (player-panels world [player] player-dictionary)]))
 
 (defn do-after "Wait for 'delay' before executing the function 'f'"
   [delay f]
@@ -150,8 +157,9 @@
          (invoke-later
           (doseq [[cood value] cvals]
             (let [widget (select root-frame [(str "#" (build-id cood playerid))])]
-              
-              (config! widget :text (display-dictionary value) :class value))
+              (config! widget :text (display-dictionary value)
+                       :class value
+                       :background (class-dictionary value)))
             )
           )
          ;(add-behaviors root-frame)
@@ -169,6 +177,7 @@
     (add-randomai-player! worldref :p1 "Alpha" (partial randomai-watcher (partial do-after 500)) prototypes)
     (add-randomai-player! worldref :p2 "Beta"  (partial randomai-watcher (partial do-after 500)) prototypes)
     (add-randomai-player! worldref :p3 "Gamma" (partial randomai-watcher (partial do-after 500)) prototypes)
+    (add-randomai-player! worldref :p4 "Delta" (partial randomai-watcher (partial do-after 500)) prototypes)
     (add-watch worldref :observer seesaw-watcher)
     (draw-frame worldref :p1)
     ))

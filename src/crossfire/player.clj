@@ -26,7 +26,8 @@
   (filter :active (all-players worldref)))
 
 (defn opponents-of [worldref playerid]
-  (filter #(not= playerid (:playerid %)) (all-players worldref)))
+  (with-world [world worldref]
+    (filter #(not= playerid (:playerid %)) (all-players world))))
 
 (defn active-opponents-of [worldref playerid]
   (filter :active ( opponents-of worldref playerid)))
