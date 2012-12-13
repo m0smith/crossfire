@@ -154,7 +154,7 @@
               (config! widget :text (display-dictionary value) :class value))
             )
           )
-         (add-behaviors root-frame)
+         ;(add-behaviors root-frame)
          )
        ))
   (when (= :hit (get-in new [:move-result :result]))
