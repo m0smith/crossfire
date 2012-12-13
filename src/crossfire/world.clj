@@ -1,4 +1,5 @@
-(ns crossfire.world)
+(ns crossfire.world
+  (:use         [crossfire.util :only [threadid]]))
 
 ;; ========================================
 ;; WORLD
@@ -8,7 +9,14 @@
 ;;            this world is altered
 ;;  :players - a map of playerid to players
 ;;  :status one of: :init :active :over
-;;  :turn - The vector of playerids in the order of their turns.  The head player
+;;  :move-result - a map with
+;;      :playerid - who made the move
+;;      :opponentid - who was attacked
+;;      :cood cood - where the move was made
+;;      :result  - either :hit or :miss
+;;      :piece-state - either :miss :hit or :sunk
+;;      :opponent-state - :active or :over
+;;  :turn - The vector of playerids in the order of thpeir turns.  The head player
 ;;          is the one with the current turn.  Only players with :active set to true
 ;;          can be the head player
 ;;========================================
@@ -23,6 +31,7 @@
   {:worldid worldid
    :seqid 0
    :status :init
+   :message "Initializing ..."
    :players {}
    :turn []})
 
@@ -40,7 +49,8 @@ does not exist"
   (when (= :init (:status @worldref))
     (swap! worldref #(-> %
                          (assoc :status :active)
-                         (update-in [:seqid] inc)))))
+                         (update-in [:seqid] inc))))
+  (println "end of start-world! " (threadid)))
 
 (defn active-world? [world]
   (= (world :status) :active))

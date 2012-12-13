@@ -1,6 +1,7 @@
 (ns crossfire.player
-  (:use [crossfire.board :only [create-board empty-locations get-board open-locations]]
+  (:use [crossfire.board :only [create-board empty-locations get-board open-locations opponent-dictionary]]
         [crossfire.cood :only [cood+]]
+        [crossfire.util :only [threadid]]
         [crossfire.world :only [with-world active-world? get-world]]
         [clojure.set :only [difference]]))
 
@@ -84,14 +85,15 @@ Return nil if the piece cannot be placed or the computed peice"
 
 (defn player-active? [world playerid]
   (let [player (get-player world playerid)]
-    (println "====== player-active?" player)
+    ;;(println "====== player-active?" player)
     (:active player)))
 
 (defn player-turn? [world playerid]
   (= playerid (first (:turn world))))
 
-(defn shoot-cood [coods cood]
-  (if (= :open (get coods cood))
+(defn shoot-cood [value]
+;;  (println ">>>>>>> shoot-cood: " value)
+  (if (= :open value)
     :hit
     :miss))
 
@@ -100,53 +102,92 @@ Return nil if the piece cannot be placed or the computed peice"
     (let [turn-vec (:turn world)
           sz (count turn-vec)]
       (loop [turns (rest (cycle turn-vec))]
-        (println "====== next-turn " (first turns) (player-active? world (first turns)) world)
+        ;;(println "====== next-turn " (first turns) (player-active? world (first turns)) world)
         (if (player-active? world (first turns))
           (assoc world :turn (vec (take sz turns)))
           (recur (rest turns)))))
     world))
 
 
-(defn player-has-ships? [worldref playerid]
-  (with-world [world worldref]
-    (when (not (seq (open-locations (get-board world playerid))))
-      (assoc-in world [:players playerid :active] false))))
+(defn player-has-pieces? [world playerid]
+  (let [board (get-board world playerid)
+        open-locs (open-locations board)]
+    ;;(println ">>>> player-has-ships?" open-locs board)
+    (if (not (seq open-locs))
+      (-> world
+        (assoc-in  [:players playerid :active] false)
+        (assoc-in [:move-result :opponent-state] :over ))
+      world)))
 
 (defn update-game-status [world]
   (let [current-status (:status world)]
     (when (= current-status :active)
       (let [ status? (> (count (active-players world)) 1)
             status (if status? current-status :over)]
-        (if (= :over status) (println "====== GAME OVER ===="))
         (assoc world :status status)))))
 (defn echo [msg id]
  ;; (println "echo " id msg)
   msg)
 
-(defn make-move-internal [world opponentid cood]
-  (println "make-move-internal start")
+(defn place-peg [world opponentid cood]
+  (let [value (shoot-cood (get-in world [:players opponentid :board :coods cood]))]
+    (-> world
+        (assoc-in [:players opponentid :board :coods cood] value)
+        (assoc-in [:move-result :result] value))))
+
+(defn is-in? [ele coll]
+  (filter #{ele} coll))
+
+(defn find-piece-containing [player cood]
+  (let [pieces (:pieces player)]
+    (first (filter (partial is-in? cood) pieces))))
+
+
+(defn piece-state [board piece]
+  (let [states (map #(opponent-dictionary ( get-in board [:coods %])) piece)
+        rtnval (cond
+                (apply = :hit states) :sunk
+                (is-in? :hit states) :hit
+                :else :miss)]
+    ;;(println "piece-state:" rtnval)
+    rtnval))
+
+(defn piece-state-to-move-result [world opponentid cood]
+  (let [opponent (get-player world opponentid)
+        board (get-board opponent)
+        piece (find-piece-containing opponent cood)]
+    (assoc-in world [:move-result :piece-state] (piece-state board piece))))
+
+(defn make-move-internal [world playerid opponentid cood]
+  ;;(println "make-move-internal start")
   (let [rtnval (-> world
                    (update-in [:seqid] inc)
+                   (assoc-in [:move-result] {:playerid playerid
+                                             :opponentid opponentid
+                                             :cood cood})
                    ( echo "1")
-                   (update-in [:players opponentid :board :coods] shoot-cood cood)
+                   (place-peg opponentid cood)
+                   (piece-state-to-move-result opponentid cood)
                    ( echo "2")
-                   (player-has-ships? opponentid)
+                   (player-has-pieces? opponentid)
                    ( echo "3")
                    update-game-status
                    ( echo "4")
                    next-turn
                    (echo "5"))]
-    (println "make-move-internal:" rtnval)
+    ;;(println "make-move-internal:" rtnval)
     rtnval))
 
 (defn make-move! [world playerid opponentid cood]
   (when (and (active-world? world)
              (player-turn? world playerid))
     (let [worldref (get-world (:worldid world))]
-      (println "make-move! " (:worldid world) playerid opponentid cood)
-      (swap! worldref make-move-internal opponentid cood)
-      (println "make-move! POST:" @worldref))
-    ))
+      ;;(println "make-move! " (:worldid world) playerid opponentid cood)
+      (swap! worldref make-move-internal playerid opponentid cood)
+      ;;(println "make-move! POST:" @worldref)
+      )
+    )
+)
 
 (defn debug-watch [ key _ ___ new]
   (println "DEBUG====" key new))

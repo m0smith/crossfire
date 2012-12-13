@@ -1,16 +1,17 @@
 (ns crossfire.ui.seesaw
   (:use [seesaw core graphics]
-        [crossfire.player.randomai :only [ add-randomai-player!]]
+        [crossfire.player.randomai :only [ add-randomai-player! randomai-watcher ]]
         [crossfire.world :only [create-world get-world start-world!]]
         [crossfire.board :only [all-location-cvals display-dictionary player-dictionary
                                 opponent-dictionary get-dimensions
                                 get-board]]
-        [crossfire.player :only [get-player]]))
+        [crossfire.player :only [get-player all-players]]))
 
 (def prototypes [ [[0 0] [0 1]]
                   [[0 0] [1 0] [2 0]]
                   [[0 0] [1 0] [1 1]]])
 
+(def root-frame (frame :size [500 :by 500]))
 
 ;; (defn choose-opponent [world player]
 ;;   (let [ops (opponents world player)
@@ -37,9 +38,12 @@
 
 (def tile-size 5)
 
+(defn build-id [[x y :as cood] playerid]
+  (str (name playerid) "-" x "-" y))
+
 (defn peg-widget [[x y :as cood] tile player dictionary]
    (button
-    :id tile
+    :id (build-id cood (:playerid player))
     ;;:border (str cood)
     :class tile
     :user-data {:cood cood
@@ -98,6 +102,7 @@
            :background :blue
            :listen [:mouse-pressed #(println (user-data %))])
   (config! (select root [:.hit]) :background :red)
+  (config! (select root [:.miss]) :background :white)
   (println "add-behaviors end")
   root)
 
@@ -105,13 +110,18 @@
   [ (player-panels world (map (partial get-player world)[:p2 :p3]) player-dictionary)
     (player-panels world [player] player-dictionary)])
 
+(defn do-after "Wait for 'delay' before executing the function 'f'"
+  [delay f]
+  (let [executor (java.util.concurrent.Executors/newSingleThreadScheduledExecutor)]
+    (.schedule executor f delay java.util.concurrent.TimeUnit/MILLISECONDS)))
+
 (defn draw-frame [worldref playerid]
   
   (let [world @worldref
         player (get-player world playerid)]
     (invoke-later
      (->
-      (frame :size [500 :by 500])
+      root-frame
       (config!  :title "Crossfire",
                 :content (border-panel
                           :vgap 5
@@ -124,16 +134,41 @@
       add-behaviors
       pack!
       show!)
-     (start-world! worldref))))
+     (println "drew-frame")
+     
+     (send-off (agent worldref) #(start-world! %)))))
 
-(defn seesaw-watcher [playerid  _ __ new]
-  (println "seesaw-watcher:" playerid))
+
+
+
+(defn seesaw-watcher [watchid  _ __ new]
+  (let [players (all-players new)]
+     (doseq [player players]
+       (let [playerid (:playerid player)
+             board (get-board player)
+             cvals (all-location-cvals board)]
+         (invoke-later
+          (doseq [[cood value] cvals]
+            (let [widget (select root-frame [(str "#" (build-id cood playerid))])]
+              
+              (config! widget :text (display-dictionary value) :class value))
+            )
+          )
+         (add-behaviors root-frame)
+         )
+       ))
+  (when (= :hit (get-in new [:move-result :result]))
+    (println "seesaw-watcher:" watchid (:seqid new) (:move-result new))))
+
+
+
 
 (defn -main [ & args]
   (let [ wid (create-world)
         worldref (get-world wid)]
-    (add-randomai-player! worldref :p1 "Alpha"  seesaw-watcher prototypes)
-    (add-randomai-player! worldref :p2 "Beta"   seesaw-watcher prototypes)
-    (add-randomai-player! worldref :p3 "Gamma"  seesaw-watcher prototypes)
+    (add-randomai-player! worldref :p1 "Alpha" (partial randomai-watcher (partial do-after 500)) prototypes)
+    (add-randomai-player! worldref :p2 "Beta"  (partial randomai-watcher (partial do-after 500)) prototypes)
+    (add-randomai-player! worldref :p3 "Gamma" (partial randomai-watcher (partial do-after 500)) prototypes)
+    (add-watch worldref :observer seesaw-watcher)
     (draw-frame worldref :p1)
     ))
