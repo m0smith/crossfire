@@ -40,7 +40,7 @@
   ([dim]
      {
       :coods {}
-      :dim [5 6]
+      :dim dim
       }))
 
 (defn get-dimensions

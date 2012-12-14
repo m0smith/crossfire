@@ -19,30 +19,14 @@
    :miss :white
    :empty :blue})
 
-;; (defn choose-opponent [world player]
-;;   (let [ops (opponents world player)
-;;         opmap (zipmap (map :playerid ops) ops)]
-;;     (if (> (count ops) 1)
-;;       (do
-;;         (print "Pick opponent from:")
-;;         (println (map :playerid ops))
-;;         (let [rtnval (get opmap (read-string (read-line)))]
-;;           (println opmap rtnval)
-;;           rtnval))
-;;       (first ops))))
-
-;; (defn choose-cood [world opponent]
-;;   (print-board world opponent)
-;;   (print "Choose cood [x y]:")
-;;   (let [cood (read-string (read-line))]
-;;     cood))
-
-;; (defn- make-move* [world player]
-;;   (let [opponent (choose-opponent world player)
-;;         cood (choose-cood world opponent)]
-;;     [opponent cood]))
-
 (def tile-size 5)
+
+(defn do-after "Wait for 'delay' before executing the function 'f'"
+  [delay f]
+  (let [executor (java.util.concurrent.Executors/newSingleThreadScheduledExecutor)]
+    (.schedule executor f delay java.util.concurrent.TimeUnit/MILLISECONDS)))
+
+
 
 (defn build-id [[x y :as cood] playerid]
   (str (name playerid) "-" x "-" y))
@@ -109,7 +93,15 @@
                 (:cood user-data)
                 )))
 
-(defn add-behaviors [root playerid]
+(defn cvc [worldref]
+  (add-watch worldref :p1 (partial randomai-watcher (partial do-after 500)))
+  (send-off (agent worldref) #(start-world! %))
+  )
+(defn hvc [worldref]
+  (send-off (agent worldref) #(start-world! %))
+  )
+
+(defn add-behaviors [root worldref playerid]
   (println "add-behaviors start" )
   (config! (select root [:.open])
            :background :grey
@@ -119,6 +111,8 @@
            :listen [:mouse-pressed (partial handle-button playerid)])
   (config! (select root [:.hit]) :background :red)
   (config! (select root [:.miss]) :background :white)
+  (config! (select root [:#cvc]) :listen [:mouse-pressed (fn [f] (cvc worldref))])
+  (config! (select root [:#hvc]) :listen [:mouse-pressed (fn [f] (hvc worldref))])
   (println "add-behaviors end")
   root)
 
@@ -127,10 +121,7 @@
     [ (player-panels world (map (partial get-player world) (map :playerid opponents)) player-dictionary)
       (player-panels world [player] player-dictionary)]))
 
-(defn do-after "Wait for 'delay' before executing the function 'f'"
-  [delay f]
-  (let [executor (java.util.concurrent.Executors/newSingleThreadScheduledExecutor)]
-    (.schedule executor f delay java.util.concurrent.TimeUnit/MILLISECONDS)))
+
 
 (defn draw-frame [worldref playerid]
   
@@ -143,18 +134,20 @@
                 :content (border-panel
                           :vgap 5
                           :hgap 5
-                          :north "Take Aim!"
+                          :north (horizontal-panel :items [ "Take Aim!"
+                                                            (button :id :cvc :text "Computer")
+                                                            (button :id :hvc :text "Human")])
                           :center (horizontal-panel :items (panels world player))
                           :south (label :id :status-bar :text "Status Bar")
                           )
                 ,
                 :on-close :exit)
-      (add-behaviors playerid)
+      (add-behaviors worldref playerid)
       pack!
       show!)
      (println "drew-frame")
      
-     (send-off (agent worldref) #(start-world! %)))))
+     )))
 
 
 (defn move-result-str [move-result]
@@ -188,10 +181,10 @@
 (defn -main [ & args]
   (let [ wid (create-world)
         worldref (get-world wid)]
-    (add-randomai-player! worldref :p1 "Alpha" prototypes)
-    (add-randomai-player! worldref :p2 "Beta"  prototypes)
-    (add-randomai-player! worldref :p3 "Gamma" prototypes)
-    (add-randomai-player! worldref :p4 "Delta" prototypes)
+    (add-randomai-player! worldref :p1 "Alpha" [6 6] prototypes)
+    (add-randomai-player! worldref :p2 "Beta"  [ 5 7 ] prototypes)
+    (add-randomai-player! worldref :p3 "Gamma" [7 5] prototypes)
+    (add-randomai-player! worldref :p4 "Delta" [8 4] prototypes)
     ;;(add-watch worldref :p1 (partial randomai-watcher (partial do-after 500)))
     (add-watch worldref :p2 (partial randomai-watcher (partial do-after 500)))
     (add-watch worldref :p3 (partial randomai-watcher (partial do-after 500)))

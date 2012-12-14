@@ -32,19 +32,19 @@
 (defn active-opponents-of [worldref playerid]
   (filter :active ( opponents-of worldref playerid)))
 
-(defn- new-player [playerid name]
+(defn- new-player [playerid name dim]
   {:playerid playerid
    :name name
-   :board (create-board)
+   :board (create-board dim)
    :pieces #{}
    :active true
   })
 
   
 (defn add-player! "Add a player to the world"
-  [worldref playerid name]
+  [worldref playerid name dim]
   (swap! worldref #(-> %
-                       (assoc-in [:players playerid] (new-player playerid name))
+                       (assoc-in [:players playerid] (new-player playerid name dim))
                        (update-in [:turn] conj playerid)
                        (update-in [:seqid] inc))))
 
