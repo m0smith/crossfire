@@ -5,7 +5,7 @@
         [crossfire.board :only [all-location-cvals display-dictionary player-dictionary
                                 opponent-dictionary get-dimensions
                                 get-board]]
-        [crossfire.player :only [get-player all-players opponents-of]]))
+        [crossfire.player :only [get-player all-players opponents-of make-move!]]))
 
 (def prototypes [ [[0 0] [0 1]]
                   [[0 0] [1 0] [2 0]]
@@ -47,17 +47,19 @@
 (defn build-id [[x y :as cood] playerid]
   (str (name playerid) "-" x "-" y))
 
-(defn peg-widget [[x y :as cood] tile player dictionary]
-   (button
-    :id (build-id cood (:playerid player))
-    ;;:border (str cood)
-    :class tile
-    :user-data {:cood cood
-                :player player
-                }
-    :location [(* tile-size x) (* tile-size y)]
-    :bounds [(* tile-size x) (* tile-size y) tile-size tile-size]
-    :text (dictionary tile)))
+(defn peg-widget [[x y :as cood] tile player dictionary world]
+  (let [ playerid (:playerid player)]
+    (button
+     :id (build-id cood playerid)
+     ;;:border (str cood)
+     :class tile
+     :user-data {:cood cood
+                 :opponentid playerid
+                 :worldid (:worldid world)
+                 }
+     :location [(* tile-size x) (* tile-size y)]
+     :bounds [(* tile-size x) (* tile-size y) tile-size tile-size]
+     :text (dictionary tile))))
 
 ;; (defn player-board-tiles [world player]
 ;;   (for [[cood tile] (player-board-locations world player)]
@@ -67,7 +69,7 @@
   (let [cvals (all-location-cvals (get-board player) dictionary)]
     (for [[cood value] cvals]
       (do
-        (peg-widget cood value player display-dictionary)))))
+        (peg-widget cood value player display-dictionary world)))))
 
 ;; (defn opponent-panels [world player]
  ;;  (tabbed-panel
@@ -99,14 +101,22 @@
    :placement :left
    :tabs (create-tabs world players dictionary)))
 
-(defn add-behaviors [root]
+(defn handle-button [playerid event]
+  (let [user-data (user-data event)]
+    (make-move! (deref (get-world (:worldid user-data)))
+                playerid
+                (:opponentid user-data)
+                (:cood user-data)
+                )))
+
+(defn add-behaviors [root playerid]
   (println "add-behaviors start" )
   (config! (select root [:.open])
            :background :grey
-           :listen [:mouse-pressed #(println (user-data %))])
+           :listen [:mouse-pressed (partial handle-button playerid)])
   (config! (select root [:.empty])
            :background :blue
-           :listen [:mouse-pressed #(println (user-data %))])
+           :listen [:mouse-pressed (partial handle-button playerid)])
   (config! (select root [:.hit]) :background :red)
   (config! (select root [:.miss]) :background :white)
   (println "add-behaviors end")
@@ -134,11 +144,12 @@
                           :vgap 5
                           :hgap 5
                           :north "Take Aim!"
-                          :center (horizontal-panel
-                                   :items (panels world player)
-                                   )),
+                          :center (horizontal-panel :items (panels world player))
+                          :south (label :id :status-bar :text "Status Bar")
+                          )
+                ,
                 :on-close :exit)
-      add-behaviors
+      (add-behaviors playerid)
       pack!
       show!)
      (println "drew-frame")
@@ -146,7 +157,9 @@
      (send-off (agent worldref) #(start-world! %)))))
 
 
-
+(defn move-result-str [move-result]
+  (str (:playerid move-result) " shot at " (:opponentid move-result) " => "
+       (:opponent-state move-result)))
 
 (defn seesaw-watcher [watchid  _ __ new]
   (let [players (all-players new)]
@@ -166,6 +179,7 @@
          )
        ))
   (when (= :hit (get-in new [:move-result :result]))
+    (config! (select root-frame [:#status-bar]) :text (move-result-str (:move-result new)))
     (println "seesaw-watcher:" watchid (:seqid new) (:move-result new))))
 
 
@@ -174,10 +188,14 @@
 (defn -main [ & args]
   (let [ wid (create-world)
         worldref (get-world wid)]
-    (add-randomai-player! worldref :p1 "Alpha" (partial randomai-watcher (partial do-after 500)) prototypes)
-    (add-randomai-player! worldref :p2 "Beta"  (partial randomai-watcher (partial do-after 500)) prototypes)
-    (add-randomai-player! worldref :p3 "Gamma" (partial randomai-watcher (partial do-after 500)) prototypes)
-    (add-randomai-player! worldref :p4 "Delta" (partial randomai-watcher (partial do-after 500)) prototypes)
+    (add-randomai-player! worldref :p1 "Alpha" prototypes)
+    (add-randomai-player! worldref :p2 "Beta"  prototypes)
+    (add-randomai-player! worldref :p3 "Gamma" prototypes)
+    (add-randomai-player! worldref :p4 "Delta" prototypes)
+    ;;(add-watch worldref :p1 (partial randomai-watcher (partial do-after 500)))
+    (add-watch worldref :p2 (partial randomai-watcher (partial do-after 500)))
+    (add-watch worldref :p3 (partial randomai-watcher (partial do-after 500)))
+    (add-watch worldref :p4 (partial randomai-watcher (partial do-after 500)))
     (add-watch worldref :observer seesaw-watcher)
     (draw-frame worldref :p1)
     ))

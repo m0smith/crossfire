@@ -42,8 +42,7 @@
 
   
 (defn add-player! "Add a player to the world"
-  [worldref playerid name watch]
-  (add-watch worldref playerid watch)
+  [worldref playerid name]
   (swap! worldref #(-> %
                        (assoc-in [:players playerid] (new-player playerid name))
                        (update-in [:turn] conj playerid)

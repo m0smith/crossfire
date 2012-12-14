@@ -26,8 +26,8 @@
         )))
 )
 
-(defn add-randomai-player! [worldref playerid name watcher templates]
-  (add-player! worldref playerid name watcher)
+(defn add-randomai-player! [worldref playerid name templates]
+  (add-player! worldref playerid name)
   (doseq [tmpl templates]
     (randomly-place-piece! worldref playerid tmpl)))
 
